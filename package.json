@@ -1,0 +1,13 @@
+{
+  "name": "music-app",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "cd back && yarn start",
+    "dev": "cd front && yarn dev"
+  },
+  "dependencies": {
+    "events": "^3.3.0"
+  }
+}
