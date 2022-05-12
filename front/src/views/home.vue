@@ -1,8 +1,12 @@
 <template>
   <div class="flex justify-start items-center gap-5 w-full flex-wrap">
     <likedSongs />
-    <category v-for="category in categories" :background="category.background" :title="category.name"
-      :key="category.title" />
+    <div v-for="category in categories" :key="category.title">
+      <router-link :to="`/category/${category.name || 'pop'}`">
+        <category :background="category.background" :title="category.name" />
+      </router-link>
+
+    </div>
   </div>
   <div class="flex flex-col justify-start items-start gap-5">
     <h1 class="text-3xl font-bold">Playlist</h1>

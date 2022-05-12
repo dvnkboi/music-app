@@ -33,6 +33,7 @@ const props = defineProps({
 });
 
 const setSelected = () => {
+  if (songStore.selectedSong.id == props.song.id) return;
   songStore.setSelected(props.song);
 };
 

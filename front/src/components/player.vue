@@ -10,7 +10,7 @@
         <div @click="playPause"
           class="rounded-full h-10 w-10 bg-gray-700 cursor-pointer hover:-translate-y-0.5 transition duration-300 flex justify-center items-center text-2xl">
           <transition name="fade-x" appear mode="out-in">
-            <i v-if="!playing" class="ri-play-fill transition duration-300"></i>
+            <i v-if="!isPlaying" class="ri-play-fill transition duration-300"></i>
             <i v-else class="ri-pause-fill transition duration-300"></i>
           </transition>
         </div>
@@ -51,24 +51,58 @@ import { ref, computed, onBeforeUnmount, onMounted, watch } from 'vue';
 import { useSongs } from '../store/useSongs';
 import { storeToRefs } from 'pinia';
 const songStore = useSongs();
-const { selectedSong } = storeToRefs(songStore);
+const { selectedSong, isPlaying } = storeToRefs(songStore);
 
 const player = ref(null);
-const playBtn = ref(null);
 const progressSlider = ref(null);
-const playing = ref(false);
 const progress = ref(0);
 let boundingBox = null;
 const progressPointer = new PointerUtils();
 const docPointer = new PointerUtils();
 
 const playPause = () => {
-  playing.value = !playing.value;
-  if (playing.value) {
+  isPlaying.value = !isPlaying.value;
+  if (isPlaying.value) {
     player.value.play();
   } else {
     player.value.pause();
   }
+
+  if ('mediaSession' in navigator) {
+    //setting the metadata
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: selectedSong.value.title,
+      artist: selectedSong.value.artist,
+      album: selectedSong.value.album,
+      artwork: [
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '96x96', type: 'image/jpg' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '128x128', type: 'image/jpg' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '192x192', type: 'image/jpg' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '256x256', type: 'image/jpg' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '384x384', type: 'image/jpg' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '512x512', type: 'image/jpg' },
+      ]
+    });
+
+    navigator.mediaSession.setActionHandler('play', function () { /* Code excerpted. */ });
+    navigator.mediaSession.setActionHandler('pause', function () { /* Code excerpted. */ });
+    navigator.mediaSession.setActionHandler('stop', function () { /* Code excerpted. */ });
+    navigator.mediaSession.setActionHandler('seekbackward', function () { /* Code excerpted. */ });
+    navigator.mediaSession.setActionHandler('seekforward', function () { /* Code excerpted. */ });
+    navigator.mediaSession.setActionHandler('seekto', function () { /* Code excerpted. */ });
+    navigator.mediaSession.setActionHandler('previoustrack', function () { /* Code excerpted. */ });
+    navigator.mediaSession.setActionHandler('nexttrack', function () { /* Code excerpted. */ });
+  }
+};
+
+const play = () => {
+  player.value.play();
+  isPlaying.value = !player.value.paused;
+};
+
+const pause = () => {
+  player.value.pause();
+  isPlaying.value = !player.value.paused;
 };
 
 const skip = () => {
@@ -88,6 +122,10 @@ const getTime = (time) => {
 
 const progressBar = computed(() => {
   return `transform:translateX(${progress.value}%)`;
+});
+
+watch(() => songStore.selectedSong, () => {
+  setTimeout(() => play(), 100);
 });
 
 
@@ -127,11 +165,46 @@ onMounted(() => {
       player.value.currentTime = (progress.value / 100) * player.value.duration;
     }
   };
+
+  player.value.addEventListener('ended', () => {
+    songStore.nextSong();
+    player.value.addEventListener('canplay', () => {
+      player.value.play();
+    }, {
+      once: true
+    });
+  });
 });
 
 window.addEventListener('resize', () => {
   boundingBox = progressSlider.value.getBoundingClientRect();
 });
+
+document.addEventListener('keyup', (e) => {
+  if (e.key === ' ') {
+    playPause();
+  }
+});
+
+
+
+// navigator.mediaSession.setActionHandler('play', (e) => {
+//   console.log(e);
+//   play();
+// });
+// navigator.mediaSession.setActionHandler('pause', () => {
+//   pause();
+// });
+// navigator.mediaSession.setActionHandler('seekbackward', () => {
+//   progress.value = ((player.value.currentTime - 10) / player.value.duration) * 100;
+//   songStore.currentTime = Math.floor(player.value.currentTime - 10 || 0);
+// });
+// navigator.mediaSession.setActionHandler('seekforward', () => {
+//   progress.value = ((player.value.currentTime + 10) / player.value.duration) * 100;
+//   songStore.currentTime = Math.floor(player.value.currentTime + 10 || 0);
+// });
+// navigator.mediaSession.setActionHandler('previoustrack', () => previous());
+// navigator.mediaSession.setActionHandler('nexttrack', () => skip());
 
 onBeforeUnmount(() => {
   clearInterval(interval);
