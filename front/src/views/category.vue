@@ -1,8 +1,12 @@
 <template>
-  <div class="flex justify-start items-start flex-col gap-5 w-full h-full">
-    <div class="flex justify-start items-start gap-5 flex-wrap flex-grow">
-      <song v-for="song in songs" :song="song" />
+  <div class="flex justify-start items-start flex-col gap-5 w-full">
+    <h1 class="text-6xl font-bold capitalize pb-5 -mt-3">{{ route.params.category }}</h1>
+    <div v-if="songs.length > 0" class="flex justify-start items-start gap-5 flex-wrap flex-grow">
+      <TransitionGroup name="list-fade-x" appear>
+        <song class="transition-all duration-300" :key="song.id" v-for="song in songs" :song="song" />
+      </TransitionGroup>
     </div>
+    <div v-else class="text-2xl flex-grow">No songs in this category yet, tune in at a later date</div>
     <div
       class="w-24 h-8 bg-blue-500 text-gray-900 rounded-xl mx-auto flex justify-center items-center group hover:-translate-y-1 transition duration-300 cursor-pointer">
       <transition name="fade-x" appear mode="out-in">
@@ -13,7 +17,6 @@
       </transition>
     </div>
   </div>
-
 </template>
 
 

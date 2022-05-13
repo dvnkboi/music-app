@@ -24,8 +24,8 @@ export const useSongs = defineStore("songStore", {
       // this.isPlaying = false;
       if (this.currentCategory.id !== song.category) {
         await this.setCurrentCategoryById(song.category);
-        this.currentIndex = this.playlist.findIndex((song) => song.id === song.id);
       }
+      this.currentIndex = this.playlist.findIndex((s) => song.id === s.id);
     },
     setPlaylist(playlist, startAt = 0) {
       this.playlist = playlist;
@@ -34,17 +34,17 @@ export const useSongs = defineStore("songStore", {
     nextSong() {
       if (this.currentIndex < this.playlist.length - 1) {
         this.currentIndex++;
-        this.setSelected(this.playlist[this.currentIndex]);
+        this.selectedSong = this.playlist[this.currentIndex];
       }
       else {
         this.currentIndex = 0;
-        this.setSelected(this.playlist[this.currentIndex]);
+        this.selectedSong = this.playlist[this.currentIndex];
       }
     },
     previousSong() {
       if (this.currentIndex > 0) {
         this.currentIndex--;
-        this.setSelected(this.playlist[this.currentIndex]);
+        this.selectedSong = this.playlist[this.currentIndex];
       }
     },
     async setCurrentCategory(category) {
@@ -61,8 +61,8 @@ export const useSongs = defineStore("songStore", {
     setTime(time) {
       this.currentTime = time;
     },
-    async fetchCategories() {
-      const categories = await fetch("http://localhost:3002/api/v1/category?fields=name,background");
+    async fetchCategories(limit = 3, page = 1) {
+      const categories = await fetch(`http://localhost:3002/api/v1/category?fields=name,background&limit=${limit}&page=${page}`);
       this.categories = (await categories.json()).data.data;
       return this.categories;
     },

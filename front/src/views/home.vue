@@ -33,7 +33,7 @@ const { playlist } = storeToRefs(songStore);
 const categories = ref([]);
 
 onMounted(async () => {
-  categories.value = await songStore.fetchCategories();
+  categories.value = await songStore.fetchCategories(5, 1);
 });
 
 

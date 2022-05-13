@@ -43,21 +43,18 @@ const { selectedSong } = storeToRefs(songStore);
 const displayedLyrics = ref([]);
 
 watch(() => songStore.selectedSong, () => {
-  const [closest, index] = findClosest(Object.keys(selectedSong?.value.lyrics), 0);
-  displayedLyrics.value[0] = displayedLyrics.value[1];
-  displayedLyrics.value[1] = {
-    lyric: selectedSong.value.lyrics[closest],
-    index: closest
-  };
-  displayedLyrics.value[2] = {
-    lyric: selectedSong?.value.lyrics[Object.keys(selectedSong?.value.lyrics)[index + 1]],
-    index: Object.keys(selectedSong?.value.lyrics)[index + 1]
-  };
+  updateLyrics(0);
 });
 
 watch(() => songStore.currentTime, (newTime) => {
-  const [closest, index] = findClosest(Object.keys(selectedSong?.value.lyrics), newTime);
-  if (displayedLyrics.value[1]?.lyric == selectedSong.value.lyrics[closest]) return;
+  updateLyrics(newTime);
+});
+
+const updateLyrics = (time) => {
+  if (selectedSong.value.lyrics == null || Object.keys(selectedSong.value.lyrics).length < 1) return;
+  displayedLyrics.value = [];
+  const [closest, index] = findClosest(Object.keys(selectedSong?.value.lyrics || {}), time);
+  // if (displayedLyrics.value[1]?.lyric == selectedSong.value.lyrics[closest]) return;
   displayedLyrics.value[0] = displayedLyrics.value[1];
   displayedLyrics.value[1] = {
     lyric: selectedSong.value.lyrics[closest],
@@ -67,11 +64,11 @@ watch(() => songStore.currentTime, (newTime) => {
     lyric: selectedSong?.value.lyrics[Object.keys(selectedSong?.value.lyrics)[index + 1]],
     index: Object.keys(selectedSong?.value.lyrics)[index + 1]
   };
-});
+};
 
 
 const findClosest = (array, value) => {
-  let index = 0;
+  let index = null;
   for (const val of array) {
     if (val > value) {
       value = val;

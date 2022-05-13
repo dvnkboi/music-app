@@ -40,7 +40,7 @@ onMounted(async () => {
 body,
 html,
 #app {
-  @apply h-screen w-full bg-gray-900 text-gray-50;
+  @apply h-screen w-full bg-gray-900 text-gray-50 select-none;
 }
 
 
@@ -52,6 +52,18 @@ html,
   @apply opacity-0 translate-x-2 scale-95;
 }
 
+
+.list-fade-x-enter-from {
+  @apply opacity-0 -translate-x-2 scale-95;
+}
+
+.list-fade-x-leave-to {
+  @apply opacity-0 translate-x-2 scale-95;
+}
+
+.list-fade-x-leave-active {
+  @apply absolute;
+}
 
 
 * {
