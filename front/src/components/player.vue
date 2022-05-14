@@ -1,6 +1,6 @@
 <template>
-  <div class="p-5 w-full fixed bottom-0">
-    <div class="bg-gray-800 rounded-3xl h-16 w-full text-white flex justify-start items-center">
+  <div class="p-0 md:p-5 w-full fixed bottom-0">
+    <div class="bg-gray-800 rounded-t-3xl md:rounded-3xl h-16 w-full text-white flex justify-start items-center">
       <!-- controlls -->
       <div class="flex justify-start items-center gap-2 p-5">
         <div @click="previous"
@@ -8,7 +8,7 @@
           <i class="ri-skip-back-fill"></i>
         </div>
         <div @click="playPause"
-          class="rounded-full h-10 w-10 bg-gray-700 cursor-pointer hover:-translate-y-0.5 transition duration-300 flex justify-center items-center text-2xl">
+          class="rounded-full h-7 w-7 md:h-10 md:w-10 bg-gray-700 cursor-pointer hover:-translate-y-0.5 transition duration-300 flex justify-center items-center text-xl md:text-2xl">
           <transition name="fade-x" appear mode="out-in">
             <i v-if="!isPlaying" class="ri-play-fill transition duration-300"></i>
             <i v-else class="ri-pause-fill transition duration-300"></i>
@@ -20,8 +20,8 @@
         </div>
       </div>
       <!-- time slider time -->
-      <div class="w-full flex justify-start items-center gap-4 pr-5">
-        <div class="text-gray-400">{{ getTime(player?.currentTime) }}</div>
+      <div class="w-full flex justify-start items-center gap-2 md:gap-4 pr-5">
+        <div class="text-gray-400 text-xs md:text-base">{{ getTime(player?.currentTime) }}</div>
         <div ref="progressSlider"
           class="relative flex-grow h-6 flex justify-start items-center pointer-events-auto cursor-pointer">
           <div class="w-full overflow-hidden relative h-1 rounded-full pointer-events-none">
@@ -36,7 +36,7 @@
             </div>
           </div>
         </div>
-        <div class="text-gray-400">{{ getTime(player?.duration) }}</div>
+        <div class="text-gray-400 text-xs md:text-base">{{ getTime(player?.duration) }}</div>
       </div>
     </div>
   </div>

@@ -2,10 +2,10 @@
   <transition name="fade-x" appear>
     <div v-if="props.song" @click="setSelected"
       :class="{ 'ring-2 ring-blue-500': playing, 'ring-0 ring-transparent': !playing }"
-      class="px-4 py-4 bg-gray-800 shadow-2xl rounded-3xl flex justify-start items-start flex-col gap-1 cursor-pointer group hover:-translate-y-1 transform transition duration-300 pb-8 w-48">
-      <div class="relative">
+      class="px-4 py-4 bg-gray-800 shadow-2xl rounded-3xl flex justify-start items-start flex-col gap-1 cursor-pointer group hover:-translate-y-1 transform transition duration-300 pb-8 w-36 md:w-48">
+      <div class="relative flex-shrink-0 aspect-square">
         <img
-          class="h-40 w-40 aspect-square bg-gradient-to-br from-blue-500 to-blue-700 rounded-3xl group-hover:-translate-y-1 transform transition duration-300 shrink-0"
+          class="w-28 h-28 md:h-40 md:w-40 aspect-square bg-gradient-to-br from-blue-500 to-blue-700 rounded-3xl group-hover:-translate-y-1 transform transition duration-300 shrink-0"
           :src="`http://localhost:3002/${props.song.image}`" alt="no img">
         <div @click.prevent.stop
           class="transition duration-300 absolute bottom-0 right-2 text-3xl group-hover:-translate-y-1.5 transform ">

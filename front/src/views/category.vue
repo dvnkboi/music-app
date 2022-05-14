@@ -1,7 +1,7 @@
 <template>
   <div class="flex justify-start items-start flex-col gap-5 w-full">
     <h1 class="text-6xl font-bold capitalize pb-5 -mt-3">{{ route.params.category }}</h1>
-    <div v-if="songs.length > 0" class="flex justify-start items-start gap-5 flex-wrap flex-grow">
+    <div v-if="songs.length > 0" class="flex justify-center md:justify-start items-start gap-5 flex-wrap flex-grow">
       <song class="transition-all duration-300" :key="song.id" v-for="song in songs" :song="song"
         :type="route.params.category" />
     </div>

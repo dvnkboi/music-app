@@ -1,6 +1,6 @@
 <template>
   <div class="flex justify-center md:justify-start items-center gap-5 w-full flex-wrap">
-    <router-link to="/liked">
+    <router-link to="/liked" class="w-full">
       <likedSongs />
     </router-link>
     <div v-for="category in categories" :key="category.title" class="w-5/12 md:w-fit">
