@@ -1,26 +1,27 @@
 <template>
-  <div :class="{ 'max-w-0 opacity-0 p-0': !validSong, 'max-w-[450px] opacity-100 p-5': validSong }"
-    class="flex justify-start items-center flex-col gap-10 w-full lg:w-min h-full transition-all duration-1000">
+  <div v-if="validSong"
+    class="flex justify-start items-center flex-col gap-10 w-full lg:w-min h-full p-5 transition-all duration-1000">
     <div class="w-[300px] sm:w-[350px] md:w-[400px] flex justify-start items-center md:items-start flex-col">
-      <div class="w-full aspect-square overflow-hidden">
+      <div class="w-full aspect-square overflow-hidden relative">
         <transition name="fade-x" appear mode="out-in">
           <img v-if="selectedSong.image" :key="selectedSong.image" class="w-full transition duration-300 rounded-3xl"
             :src="`http://localhost:3002/` + selectedSong.image" alt="">
         </transition>
+        <transition name="fade-x" appear>
+          <div v-if="selectedSong.title"
+            class="transition duration-300 absolute bottom-0 right-4 text-4xl text-gray-50">
+            <transition name="fade-x" appear mode="out-in">
+              <i v-if="isLiked(selectedSong.id)" @click="songStore.dislikeSong(selectedSong)"
+                class="ri-heart-fill transition duration-300 shadow-xl"></i>
+              <i v-else @click="songStore.likeSong(selectedSong)"
+                class="ri-heart-line transition duration-300 shadow-xl"></i>
+            </transition>
+          </div>
+        </transition>
       </div>
       <transition name="fade-x" appear mode="out-in">
-        <h1 :key="selectedSong.title"
-          class="text-3xl font-bold pt-2 transition duration-300 text-center md:text-left w-full flex justify-between items-center pr-4">
+        <h1 :key="selectedSong.title" class="text-3xl font-bold pt-2 transition duration-300 text-center md:text-left">
           {{ selectedSong.title }}
-          <transition name="fade-x" appear>
-            <div v-if="selectedSong.title" class="transition duration-300">
-              <transition name="fade-x" appear mode="out-in">
-                <i v-if="isLiked(selectedSong.id)" @click="songStore.dislikeSong(selectedSong)"
-                  class="ri-heart-fill transition duration-300"></i>
-                <i v-else @click="songStore.likeSong(selectedSong)" class="ri-heart-line transition duration-300"></i>
-              </transition>
-            </div>
-          </transition>
         </h1>
       </transition>
       <transition name="fade-x" appear mode="out-in">
@@ -69,7 +70,7 @@ watch(() => songStore.currentTime, (newTime) => {
 });
 
 const validSong = computed(() => {
-  return prepared.value && selectedSong.value && selectedSong.value.title != "";
+  return selectedSong.value && selectedSong.value.title != "";
 });
 
 const updateLyrics = (time) => {
