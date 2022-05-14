@@ -9,9 +9,27 @@
         <h1 class="group-hover:-translate-y-1 transition duration-300 delay-[150ms]">e</h1>
       </div>
     </router-link>
-    <div class="bg-gray-800 py-1 px-4 rounded-xl font-semibold flex justify-start items-center gap-4">
-      <h1 class="">Dvnkboi</h1>
-      <div class="rounded-full bg-rose-500 w-8 h-8 flex justify-center items-center">D</div>
+    <div :key="'nav_' + user.name" v-if="user?.name" @click="changeUserName"
+      class="bg-gray-800 py-1 px-4 rounded-xl font-semibold flex justify-start items-center gap-4 group hover:-translate-y-0.5 transition duration-300 cursor-pointer">
+      <h1 class="">{{ user.name }}</h1>
+      <div :class="user.color" class="rounded-full w-8 h-8 flex justify-center items-center capitalize">{{
+          user.name?.charAt(0)
+      }}
+      </div>
     </div>
   </div>
 </template>
+
+<script setup>
+import { useSongs } from '../store/useSongs';
+import { storeToRefs } from 'pinia';
+const songStore = useSongs();
+const { user } = storeToRefs(songStore);
+
+const emit = defineEmits(['changeUserName']);
+
+const changeUserName = () => {
+  emit('changeUserName');
+};
+
+</script>

@@ -59,49 +59,59 @@ const progress = ref(0);
 let boundingBox = null;
 const progressPointer = new PointerUtils();
 const docPointer = new PointerUtils();
+let sliderDebounce = null;
+let initControls = false;
+
+
+const playerPlay = () => {
+  player.value.play()
+    .then(() => {
+      navigator.mediaSession.playbackState = 'playing';
+      if ('mediaSession' in navigator) {
+
+        if (!initControls) {
+          navigator.mediaSession.setActionHandler('play', () => play());
+          navigator.mediaSession.setActionHandler('pause', () => pause());
+          navigator.mediaSession.setActionHandler('seekbackward', () => {
+            progress.value = ((player.value.currentTime - 10) / player.value.duration) * 100;
+            songStore.currentTime = Math.floor(player.value.currentTime - 10 || 0);
+          });
+          navigator.mediaSession.setActionHandler('seekforward', () => {
+            progress.value = ((player.value.currentTime + 10) / player.value.duration) * 100;
+            songStore.currentTime = Math.floor(player.value.currentTime + 10 || 0);
+          });
+          navigator.mediaSession.setActionHandler('previoustrack', () => previous());
+          navigator.mediaSession.setActionHandler('nexttrack', () => skip());
+          initControls = true;
+        }
+      }
+    })
+    .catch(() => {
+      console.log('couldnt play');
+    });
+};
+
+const playerPause = () => {
+  player.value.pause();
+  navigator.mediaSession.playbackState = 'paused';
+};
 
 const playPause = () => {
   isPlaying.value = !isPlaying.value;
   if (isPlaying.value) {
-    player.value.play();
+    playerPlay();
   } else {
-    player.value.pause();
-  }
-
-  if ('mediaSession' in navigator) {
-    //setting the metadata
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: selectedSong.value.title,
-      artist: selectedSong.value.artist,
-      album: selectedSong.value.album,
-      artwork: [
-        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '96x96', type: 'image/jpg' },
-        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '128x128', type: 'image/jpg' },
-        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '192x192', type: 'image/jpg' },
-        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '256x256', type: 'image/jpg' },
-        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '384x384', type: 'image/jpg' },
-        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '512x512', type: 'image/jpg' },
-      ]
-    });
-
-    navigator.mediaSession.setActionHandler('play', function () { /* Code excerpted. */ });
-    navigator.mediaSession.setActionHandler('pause', function () { /* Code excerpted. */ });
-    navigator.mediaSession.setActionHandler('stop', function () { /* Code excerpted. */ });
-    navigator.mediaSession.setActionHandler('seekbackward', function () { /* Code excerpted. */ });
-    navigator.mediaSession.setActionHandler('seekforward', function () { /* Code excerpted. */ });
-    navigator.mediaSession.setActionHandler('seekto', function () { /* Code excerpted. */ });
-    navigator.mediaSession.setActionHandler('previoustrack', function () { /* Code excerpted. */ });
-    navigator.mediaSession.setActionHandler('nexttrack', function () { /* Code excerpted. */ });
+    playerPause();
   }
 };
 
 const play = () => {
-  player.value.play();
+  playerPlay();
   isPlaying.value = !player.value.paused;
 };
 
 const pause = () => {
-  player.value.pause();
+  playerPause();
   isPlaying.value = !player.value.paused;
 };
 
@@ -110,7 +120,12 @@ const skip = () => {
 };
 
 const previous = () => {
-  songStore.previousSong();
+  if (songStore.currentTime > 5) {
+    progress.value = 0;
+    player.value.currentTime = 0;
+  } else {
+    songStore.previousSong();
+  }
 };
 
 const getTime = (time) => {
@@ -125,7 +140,23 @@ const progressBar = computed(() => {
 });
 
 watch(() => songStore.selectedSong, () => {
-  setTimeout(() => play(), 100);
+  if (!songStore.selectedSong) return;
+  setTimeout(() => {
+    play();
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: selectedSong.value.title,
+      artist: selectedSong.value.artist,
+      album: selectedSong.value.album,
+      artwork: [
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '96x96', type: 'image/png' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '128x128', type: 'image/png' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '192x192', type: 'image/png' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '256x256', type: 'image/png' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '384x384', type: 'image/png' },
+        { src: `http://localhost:3002/${selectedSong.value.image}`, sizes: '512x512', type: 'image/png' },
+      ]
+    });
+  }, 100);
 });
 
 
@@ -137,7 +168,7 @@ const interval = setInterval(() => {
 }, 250);
 
 const selectedUrl = computed(() => {
-  return `http://localhost:3002/${selectedSong.value.path}`;
+  return `http://localhost:3002/${selectedSong?.value?.path || 'songs/empty.mp3'}`;
 });
 
 onMounted(() => {
@@ -145,9 +176,10 @@ onMounted(() => {
   progressPointer.hook();
   progressPointer.downEl = progressSlider.value;
   progressPointer.moveEl = progressSlider.value;
-  progressPointer.downPrevent = true;
-  progressPointer.movePrevent = true;
+  progressPointer.downPrevent = false;
+  progressPointer.movePrevent = false;
   progressPointer.downCb = (e) => {
+    docPointer.hook();
     progress.value = PointerUtils.clamp((e.clientX - boundingBox.left) / boundingBox.width * 100, 0, 100);
     player.value.currentTime = (progress.value / 100) * player.value.duration;
   };
@@ -155,21 +187,36 @@ onMounted(() => {
     if (progressPointer.isPressed) {
       progress.value = PointerUtils.clamp((e.clientX - boundingBox.left) / boundingBox.width * 100, 0, 100);
       player.value.currentTime = (progress.value / 100) * player.value.duration;
+      if (isPlaying.value) playerPause();
+      clearTimeout(sliderDebounce);
+      sliderDebounce = setTimeout(() => {
+        if (isPlaying.value)
+          playerPlay();
+      }, 100);
     }
   };
+  progressPointer.upCb = () => {
+    docPointer.destroy();
+  };
 
-  docPointer.hook();
+
   docPointer.moveCb = (e) => {
     if (progressPointer.isPressed) {
       progress.value = PointerUtils.clamp((e.clientX - boundingBox.left) / boundingBox.width * 100, 0, 100);
       player.value.currentTime = (progress.value / 100) * player.value.duration;
+      if (isPlaying.value) playerPause();
+      clearTimeout(sliderDebounce);
+      sliderDebounce = setTimeout(() => {
+        if (isPlaying.value)
+          playerPlay();
+      }, 100);
     }
   };
 
   player.value.addEventListener('ended', () => {
     songStore.nextSong();
     player.value.addEventListener('canplay', () => {
-      player.value.play();
+      playerPlay();
     }, {
       once: true
     });
@@ -180,31 +227,18 @@ window.addEventListener('resize', () => {
   boundingBox = progressSlider.value.getBoundingClientRect();
 });
 
-document.addEventListener('keyup', (e) => {
+document.addEventListener('keydown', (e) => {
   if (e.key === ' ') {
-    playPause();
+    e.preventDefault();
   }
 });
 
-
-
-// navigator.mediaSession.setActionHandler('play', (e) => {
-//   console.log(e);
-//   play();
-// });
-// navigator.mediaSession.setActionHandler('pause', () => {
-//   pause();
-// });
-// navigator.mediaSession.setActionHandler('seekbackward', () => {
-//   progress.value = ((player.value.currentTime - 10) / player.value.duration) * 100;
-//   songStore.currentTime = Math.floor(player.value.currentTime - 10 || 0);
-// });
-// navigator.mediaSession.setActionHandler('seekforward', () => {
-//   progress.value = ((player.value.currentTime + 10) / player.value.duration) * 100;
-//   songStore.currentTime = Math.floor(player.value.currentTime + 10 || 0);
-// });
-// navigator.mediaSession.setActionHandler('previoustrack', () => previous());
-// navigator.mediaSession.setActionHandler('nexttrack', () => skip());
+document.addEventListener('keyup', (e) => {
+  if (e.key === ' ') {
+    e.preventDefault();
+    playPause();
+  }
+});
 
 onBeforeUnmount(() => {
   clearInterval(interval);

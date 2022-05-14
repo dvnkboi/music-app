@@ -1,7 +1,7 @@
 <template>
   <div :class="[props.background || 'from-gray-500 to-gray-900']"
-    class="h-40 w-72 rounded-3xl flex justify-start items-end text-gray-900 relative overflow-hidden group hover:-translate-y-1 transition duration-300 cursor-pointer">
-    <div class="flex justify-between items-center px-5 py-2 w-full relative z-50">
+    class="h-40 w-full md:w-72 rounded-3xl flex justify-start items-end text-gray-900 relative overflow-hidden group hover:-translate-y-1 transition duration-300 cursor-pointer">
+    <div class="flex justify-between items-center px-5 py-2 w-full relative">
       <div class="flex justify-start items-start flex-col">
         <h1 class="text-3xl font-bold group-hover:-translate-y-1 transition duration-300 capitalize">{{ props.title }}
         </h1>
@@ -13,8 +13,6 @@
 
 
 <script setup>
-import { computed } from '@vue/reactivity';
-
 const props = defineProps({
   background: {
     type: String,

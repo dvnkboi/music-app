@@ -10,6 +10,11 @@ const routes = [
         path: '/category/:category',
         name: 'Category',
         component: () => import('/src/views/category.vue'),
+    },
+    {
+        path: '/liked',
+        name: 'Liked',
+        component: () => import('/src/views/likedSongs.vue'),
     }
 ];
 const router = createRouter({
